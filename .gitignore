@@ -25,3 +25,7 @@ kaggle.json
 # OS-generated files
 .DS_Store
 Thumbs.db
+
+# dbt build artifacts — generated when dbt run executes, not source code
+ecommerce_dbt/target/
+ecommerce_dbt/dbt_packages/

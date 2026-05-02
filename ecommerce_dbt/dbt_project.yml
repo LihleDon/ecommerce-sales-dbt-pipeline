@@ -1,0 +1,31 @@
+name: "ecommerce_dbt"
+version: "1.0.0"
+config-version: 2
+
+# This must match the profile name in profiles.yml exactly
+profile: "ecommerce_dbt"
+
+# Paths — where dbt looks for things inside the project folder
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+# Where dbt writes compiled SQL and build artifacts
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Model configuration
+# This controls how dbt materialises each model in the database
+# materialized: view means dbt creates a SQL view (a saved query, no data stored)
+# materialized: table means dbt runs the query and stores the result as a real table
+models:
+  ecommerce_dbt:
+    staging:
+      +materialized: view      # staging models are views — lightweight, always fresh
+    marts:
+      +materialized: table     # mart models are tables — pre-computed, fast to query
