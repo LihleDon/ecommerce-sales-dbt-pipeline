@@ -1,89 +1,88 @@
-import pandas as pd  # pandas is the main data manipulation library
-import os            # os lets us work with file paths and directories
+import pandas as pd  # pandas handles all tabular data operations in this script
+import os            # os lets us build file paths that work on both Windows and Linux
 
-# Define the path to the raw data file
-# os.path.join builds a path that works correctly on both Windows and Linux
-# On Windows this produces: data\raw\online_retail_II.xlsx
+# Define the path to the raw CSV file
+# os.path.join builds the path correctly for whatever OS is running the script
+# On Windows this produces: data\raw\online_retail_II.csv
+# On Linux/Mac it produces: data/raw/online_retail_II.csv
 RAW_FILE = os.path.join("data", "raw", "online_retail_II.csv")
 
-def explore_sheet(sheet_name: str) -> pd.DataFrame:
+
+def explore() -> None:
     """
-    Load one sheet from the Excel file and print summary statistics.
-    Returns the loaded DataFrame so we can inspect it further.
+    Load the raw CSV and print a summary of its structure and data quality issues.
+    This script is for exploration only — it does not modify any data.
     """
-
-    print(f"\n{'='*60}")
-    print(f"Sheet: {sheet_name}")
-    print(f"{'='*60}")
-
-    # Read the Excel sheet into a DataFrame
-    # sheet_name tells pandas which tab inside the Excel file to read
-    # dtype={"Customer ID": str} prevents pandas from reading the ID as a float
-    # (which would add .0 to every value — a common bug with numeric ID columns)
-    df = pd.read_csv(RAW_FILE, encoding="latin-1")
-
-    # Print the shape — number of rows and columns
-    print(f"Shape: {df.shape[0]:,} rows × {df.shape[1]} columns")
-
-    # Print column names and their data types
-    print("\nColumn names and types:")
-    print(df.dtypes)
-
-    # Print the first 5 rows so we can see what the data actually looks like
-    print("\nFirst 5 rows:")
-    print(df.head())
-
-    # Count and print missing values per column
-    # df.isnull() returns True/False for each cell
-    # .sum() counts the Trues (missing values) per column
-    missing = df.isnull().sum()
-    print("\nMissing values per column:")
-    print(missing[missing > 0])  # only print columns that actually have missing values
-
-    # Show how many rows have cancelled orders
-    # Cancelled invoice numbers start with 'C' in this dataset
-    # str.startswith returns a boolean Series — True where the condition matches
-    cancelled = df[df["Invoice"].astype(str).str.startswith("C")]
-    print(f"\nCancelled transactions: {len(cancelled):,}")
-
-    # Show the range of transaction dates
-    print(f"\nDate range: {df['InvoiceDate'].min()} → {df['InvoiceDate'].max()}")
-
-    # Show unique counts for key columns
-    print(f"Unique invoices: {df['Invoice'].nunique():,}")
-    print(f"Unique customers: {df['Customer ID'].nunique():,}")
-    print(f"Unique stock codes: {df['StockCode'].nunique():,}")
-    print(f"Unique countries: {df['Country'].nunique():,}")
-
-    # Show negative quantities — these are returns or data errors
-    negative_qty = df[df["Quantity"] < 0]
-    print(f"Rows with negative quantity: {len(negative_qty):,}")
-
-    return df
-
-
-def main():
-    """Entry point — explore both sheets in the Excel file."""
 
     # Check the file exists before trying to open it
+    # If we skip this check and the file is missing, pandas gives a confusing error
     if not os.path.exists(RAW_FILE):
         print(f"ERROR: File not found at {RAW_FILE}")
         print("Make sure you have run the Kaggle download step.")
-        return  # exit the function early — nothing else can run without the file
+        return  # exit early — nothing else can run without the file
 
-    # The Excel file has two sheets — explore both
-    df_year1 = explore_sheet("Year 2009-2010")
-    df_year2 = explore_sheet("Year 2010-2011")
-
-    # Combined row count across both sheets
-    total_rows = len(df_year1) + len(df_year2)
     print(f"\n{'='*60}")
-    print(f"TOTAL ROWS ACROSS BOTH SHEETS: {total_rows:,}")
-    print(f"{'='*60}\n")
+    print("RAW DATA EXPLORATION")
+    print(f"{'='*60}")
+
+    # Read the CSV into a pandas DataFrame
+    # encoding="latin-1" handles special characters in product descriptions
+    # and European country names that would cause a UTF-8 decode error
+    # Without this argument pandas uses UTF-8 by default and crashes on certain rows
+    # dtype={"Customer ID": str} prevents pandas from reading the ID as a float
+    # Pandas sees a numeric column with missing values and converts it to float64
+    # which turns 13085 into 13085.0 — setting dtype=str keeps it as text
+    df = pd.read_csv(RAW_FILE, encoding="latin-1", dtype={"Customer ID": str})
+
+    # Print the total number of rows and columns
+    # df.shape returns a tuple: (number_of_rows, number_of_columns)
+    print(f"\nShape: {df.shape[0]:,} rows × {df.shape[1]} columns")
+    # The :, inside the format spec adds comma separators to large numbers
+    # 1067371 becomes 1,067,371 — much easier to read
+
+    # Print column names and their data types
+    print("\nColumn names and data types:")
+    print(df.dtypes)
+    # dtypes shows you what pandas inferred for each column
+    # This is important because a column read as the wrong type causes bugs later
+
+    # Print the first 5 rows to see what the actual data looks like
+    print("\nFirst 5 rows:")
+    print(df.head())
+    # head() returns the first N rows — default is 5
+
+    # Count missing values per column
+    # df.isnull() returns a DataFrame of True/False — True where a value is missing
+    # .sum() counts the True values per column (True = 1, False = 0)
+    missing = df.isnull().sum()
+    print("\nMissing values per column:")
+    print(missing[missing > 0])  # filter to only show columns that actually have gaps
+
+    # Count cancelled transactions
+    # In this dataset, cancelled invoices start with the letter 'C'
+    # For example: C536379 is the cancellation of invoice 536379
+    cancelled = df[df["Invoice"].astype(str).str.startswith("C")]
+    # .astype(str) converts the column to string type so .str methods work
+    # .str.startswith("C") returns True for every row where Invoice starts with C
+    print(f"\nCancelled transactions (Invoice starts with 'C'): {len(cancelled):,}")
+
+    # Show the date range of the dataset
+    print(f"\nDate range: {df['InvoiceDate'].min()} → {df['InvoiceDate'].max()}")
+
+    # Count unique values for key identifier columns
+    print(f"\nUnique invoices:    {df['Invoice'].nunique():,}")
+    print(f"Unique customers:   {df['Customer ID'].nunique():,}")
+    print(f"Unique stock codes: {df['StockCode'].nunique():,}")
+    print(f"Unique countries:   {df['Country'].nunique():,}")
+    # nunique() counts distinct non-null values in the column
+
+    # Count rows with negative quantity — these are returns or data entry errors
+    negative_qty = df[df["Quantity"] < 0]
+    print(f"\nRows with negative quantity: {len(negative_qty):,}")
 
 
-# This block only runs when you execute this file directly
-# It does NOT run if another file imports this module
-# This is a Python best practice — always guard your entry point
+# This block only runs when you execute this file directly with: python explore_data.py
+# It does NOT run if another script imports anything from this file
+# This is a Python best practice — always guard your script entry point
 if __name__ == "__main__":
-    main()
+    explore()
