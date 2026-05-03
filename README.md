@@ -8,15 +8,25 @@ The pipeline strips out cancellations, missing customers, duplicates, and bad pr
 
 ## Architecture
 
-Kaggle CSV  →  extract.py  →  transform.py  →  load.py  →  DuckDB
-↓
-dbt staging model (view)
-↓
-dbt mart models (tables)
-┌───────────────┬──────────────────┐
-customer          product            monthly
-metrics           metrics            revenue
+## Architecture
 
+```
+Raw CSV (Kaggle)
+      ↓
+  extract.py        reads CSV into a DataFrame
+      ↓
+ transform.py       cleans and standardises (10 steps)
+      ↓
+   load.py          writes to DuckDB
+      ↓
+ stg_transactions   dbt staging view
+      ↓
+  ┌───────────────────────────────────────┐
+  │  mart_customer_metrics  (table)       │
+  │  mart_product_metrics   (table)       │
+  │  mart_monthly_revenue   (table)       │
+  └───────────────────────────────────────┘
+```
 **Stack:** Python · Pandas · DuckDB · dbt Core
 
 ---
