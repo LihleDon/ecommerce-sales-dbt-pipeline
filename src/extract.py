@@ -10,7 +10,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Updated from .xlsx to .csv — the Kaggle dataset now ships as a single CSV file
+
 RAW_FILE = os.path.join("data", "raw", "online_retail_II.csv")
 
 def extract() -> pd.DataFrame:
@@ -27,10 +27,6 @@ def extract() -> pd.DataFrame:
 
     logger.info(f"Reading raw file: {RAW_FILE}")
 
-    # encoding="latin-1" handles special characters in product descriptions
-    # and country names that would cause a UTF-8 decode error
-    # dtype={"Customer ID": str} prevents Pandas from reading the ID as 13085.0
-    # — without this, any column with missing values gets cast to float automatically
     df = pd.read_csv(
         RAW_FILE,
         encoding="latin-1",
