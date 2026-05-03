@@ -1,12 +1,10 @@
-import logging  # for pipeline-level log messages
-import time     # for measuring how long the full pipeline takes to run
+import logging  
+import time     
 
-# Import the three main functions — one from each pipeline script
 from extract import extract
 from transform import transform
 from load import load
 
-# Set up logging for the pipeline runner
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -26,16 +24,14 @@ def run_pipeline() -> None:
     logger.info("PIPELINE START: ecommerce-sales-dbt-pipeline")
     logger.info("=" * 60)
 
-    # Record the start time so we can calculate total duration
     pipeline_start = time.time()
 
     # --- EXTRACT ---
     logger.info("STEP 1/3: Extract")
     step_start = time.time()
-    df_raw = extract()           # calls extract() from extract.py, returns a DataFrame
+    df_raw = extract()           
     step_duration = time.time() - step_start
-    # time.time() returns the current time in seconds since the Unix epoch
-    # subtracting start from end gives elapsed time in seconds
+    
     logger.info(f"Extract complete in {step_duration:.1f}s — {len(df_raw):,} rows")
 
     # --- TRANSFORM ---
