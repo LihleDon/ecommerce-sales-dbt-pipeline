@@ -55,28 +55,31 @@ After cleaning, 779,425 rows load into DuckDB in under 2 seconds. Three dbt mart
 
 ## Project structure
 
+```
 ecommerce-sales-dbt-pipeline/
+│
 ├── data/
-│   ├── raw/              ← source CSV (downloaded via Kaggle CLI, not committed)
-│   └── processed/        ← reserved for future exports
+│   ├── raw/                         source CSV, not committed
+│   └── processed/                   reserved for future exports
+│
 ├── notebooks/
-│   └── explore_data.py   ← initial data profiling script
+│   └── explore_data.py              initial data profiling
+│
 ├── src/
-│   ├── extract.py        ← reads raw CSV into a DataFrame
-│   ├── transform.py      ← 10-step cleaning pipeline with row-level logging
-│   ├── load.py           ← writes clean data to DuckDB
-│   └── pipeline.py       ← orchestrates extract → transform → load
+│   ├── extract.py                   reads raw CSV into a DataFrame
+│   ├── transform.py                 10-step cleaning pipeline
+│   ├── load.py                      writes clean data to DuckDB
+│   └── pipeline.py                  runs extract, transform, load in order
+│
 └── ecommerce_dbt/
-└── models/
-├── staging/
-│   └── stg_transactions.sql     ← standardised base layer over raw table
-└── marts/
-├── mart_customer_metrics.sql    ← spend, orders, tenure per customer
-├── mart_product_metrics.sql     ← revenue, units, reach per product
-└── mart_monthly_revenue.sql     ← revenue trends with MoM growth %
-
-
----
+    └── models/
+        ├── staging/
+        │   └── stg_transactions.sql
+        └── marts/
+            ├── mart_customer_metrics.sql
+            ├── mart_product_metrics.sql
+            └── mart_monthly_revenue.sql
+```
 
 ## Setup
 
