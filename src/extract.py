@@ -10,15 +10,15 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
 RAW_FILE = os.path.join("data", "raw", "online_retail_II.csv")
+
 
 def extract() -> pd.DataFrame:
     """
-    Extract raw data from the CSV file and return a DataFrame.
-    The original dataset had two Excel sheets — the CSV version is a single file
-    containing the same data. Deduplication happens in transform.py.
+    Read the raw CSV and return it as a DataFrame.
+    No cleaning happens here — that is transform.py's job.
     """
+
     if not os.path.exists(RAW_FILE):
         raise FileNotFoundError(
             f"Raw data file not found: {RAW_FILE}\n"
@@ -27,6 +27,10 @@ def extract() -> pd.DataFrame:
 
     logger.info(f"Reading raw file: {RAW_FILE}")
 
+    # encoding="latin-1" is required — the file contains special characters in
+    # product descriptions and country names that break UTF-8.
+    # dtype={"Customer ID": str} prevents pandas from casting the column to float64
+    # when it encounters missing values, which would corrupt every ID with a trailing .0
     df = pd.read_csv(
         RAW_FILE,
         encoding="latin-1",
@@ -34,7 +38,9 @@ def extract() -> pd.DataFrame:
     )
 
     logger.info(f"Loaded {len(df):,} rows from CSV")
+
     return df
+
 
 if __name__ == "__main__":
     df = extract()
