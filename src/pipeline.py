@@ -1,5 +1,5 @@
-import logging  
-import time     
+import logging
+import time
 
 from extract import extract
 from transform import transform
@@ -15,9 +15,8 @@ logger = logging.getLogger(__name__)
 
 def run_pipeline() -> None:
     """
-    Orchestrate the full ETL pipeline.
-    Runs extract → transform → load in sequence.
-    Logs the time taken for each step and the total pipeline duration.
+    Orchestrate the full ETL pipeline: Extract, Transform, Load.
+    Each step is timed individually and the total duration is logged at the end.
     """
 
     logger.info("=" * 60)
@@ -26,32 +25,23 @@ def run_pipeline() -> None:
 
     pipeline_start = time.time()
 
-    # --- EXTRACT ---
     logger.info("STEP 1/3: Extract")
     step_start = time.time()
-    df_raw = extract()           
-    step_duration = time.time() - step_start
-    
-    logger.info(f"Extract complete in {step_duration:.1f}s — {len(df_raw):,} rows")
+    df_raw = extract()
+    logger.info(f"Extract complete in {time.time() - step_start:.1f}s — {len(df_raw):,} rows")
 
-    # --- TRANSFORM ---
     logger.info("STEP 2/3: Transform")
     step_start = time.time()
-    df_clean = transform(df_raw)  # calls transform() from transform.py
-    step_duration = time.time() - step_start
-    logger.info(f"Transform complete in {step_duration:.1f}s — {len(df_clean):,} rows remain")
+    df_clean = transform(df_raw)
+    logger.info(f"Transform complete in {time.time() - step_start:.1f}s — {len(df_clean):,} rows remain")
 
-    # --- LOAD ---
     logger.info("STEP 3/3: Load")
     step_start = time.time()
-    load(df_clean)               # calls load() from load.py
-    step_duration = time.time() - step_start
-    logger.info(f"Load complete in {step_duration:.1f}s")
+    load(df_clean)
+    logger.info(f"Load complete in {time.time() - step_start:.1f}s")
 
-    # --- SUMMARY ---
-    total_duration = time.time() - pipeline_start
     logger.info("=" * 60)
-    logger.info(f"PIPELINE COMPLETE in {total_duration:.1f}s")
+    logger.info(f"PIPELINE COMPLETE in {time.time() - pipeline_start:.1f}s")
     logger.info("=" * 60)
 
 
